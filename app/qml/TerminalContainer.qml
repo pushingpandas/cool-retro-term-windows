@@ -28,7 +28,8 @@ ShaderTerminal {
     property bool isActive: false
     signal sessionFinished()
 
-    property bool loadBloomEffect: appSettings.bloom > 0 || appSettings._frameShininess > 0
+    property bool loadBloomEffect: appSettings.bloom > 0
+                                  || (!appSettings.classicCrt && appSettings._frameShininess > 0)
 
     id: mainShader
     opacity: appSettings.windowOpacity * 0.3 + 0.7
@@ -74,7 +75,7 @@ ShaderTerminal {
         sourceComponent: ShaderEffectSource {
             id: _bloomEffectSource
             sourceItem: bloomEffectLoader.item
-            wrapMode: ShaderEffectSource.Repeat
+            wrapMode: appSettings.classicCrt ? ShaderEffectSource.ClampToEdge : ShaderEffectSource.Repeat
             hideSource: true
             smooth: true
             visible: false

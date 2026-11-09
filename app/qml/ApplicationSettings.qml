@@ -92,15 +92,22 @@ QtObject {
     property real frameShininess: _frameShininess * 0.5
 
     property real _frameSize: 0.2
-    property real frameSize: _frameSize * 0.05
+    property real frameSize: classicCrt ? 0 : _frameSize * 0.05
 
     property real _screenRadius: 0.2
     property real screenRadius: Utils.lint(4.0, 120.0, _screenRadius)
 
     property real _margin: 0.5
-    property real margin: Utils.lint(1.0, 40.0, _margin) + (1.0 - Math.SQRT1_2) * screenRadius
+    property bool classicCrt: false
+    property real margin: classicCrt ? Utils.lint(1.0, 20.0, _margin)
+                                     : Utils.lint(1.0, 40.0, _margin) + (1.0 - Math.SQRT1_2) * screenRadius
 
-    readonly property bool frameEnabled: ambientLight > 0 || _frameSize > 0 || screenCurvature > 0
+    readonly property bool frameEnabled: classicCrt ? screenCurvature > 0
+                                                    : ambientLight > 0 || _frameSize > 0 || screenCurvature > 0
+
+    function curvatureForWindow(normalizedWindowScale) {
+        return screenCurvature * (classicCrt ? 0.4 : screenCurvatureSize * normalizedWindowScale)
+    }
 
     readonly property int no_rasterization: 0
     readonly property int scanline_rasterization: 1
@@ -196,8 +203,10 @@ QtObject {
             "fontName": fontName,
             "fontSource": fontSource,
             "fontWidth": fontWidth,
+            "lineSpacing": lineSpacing,
             "margin": _margin,
             "blinkingCursor": blinkingCursor,
+            "classicCrt": classicCrt,
             "frameSize": _frameSize,
             "screenRadius": _screenRadius,
             "frameColor": _frameColor,
@@ -297,8 +306,8 @@ QtObject {
         windowOpacity = settings.windowOpacity
                 !== undefined ? settings.windowOpacity : windowOpacity
 
-        fontName = settings.fontName !== undefined ? settings.fontName : fontName
         fontSource = settings.fontSource !== undefined ? settings.fontSource : fontSource
+        fontName = settings.fontName !== undefined ? settings.fontName : fontName
         fontWidth = settings.fontWidth !== undefined ? settings.fontWidth : fontWidth
         lineSpacing = settings.lineSpacing !== undefined ? settings.lineSpacing : lineSpacing
 
@@ -307,6 +316,7 @@ QtObject {
         _screenRadius = settings.screenRadius !== undefined ? settings.screenRadius : _screenRadius
         _frameColor = settings.frameColor !== undefined ? settings.frameColor : _frameColor
         _frameShininess = settings.frameShininess !== undefined ? settings.frameShininess : _frameShininess
+        classicCrt = settings.classicCrt === true
 
         blinkingCursor = settings.blinkingCursor !== undefined ? settings.blinkingCursor : blinkingCursor
     }
@@ -837,6 +847,321 @@ QtObject {
                 "frameSize": 0,
                 "frameColor": "#cdcdcd",
                 "frameShininess": 0.2
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic Amber (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0.2,
+                "backgroundColor": "#000000",
+                "bloom": 0.5538,
+                "brightness": 0.5,
+                "burnIn": 0.2517,
+                "chromaColor": 0.2483,
+                "contrast": 0.7959,
+                "flickering": 0.1,
+                "fontColor": "#ff8100",
+                "fontName": "CLASSIC_TERMINUS_SCALED",
+                "fontSource": 0,
+                "fontWidth": 1,
+                "lineSpacing": 0.0833,
+                "glowingLine": 0.2,
+                "horizontalSync": 0.08,
+                "jitter": 0.1997,
+                "rasterization": 0,
+                "rgbShift": 0,
+                "saturationColor": 0.2483,
+                "screenCurvature": 0.3,
+                "screenRadius": 0.1,
+                "staticNoise": 0.1198,
+                "windowOpacity": 1,
+                "margin": 0.5,
+                "blinkingCursor": false,
+                "classicCrt": true,
+                "frameSize": 0,
+                "frameColor": "#ffffff",
+                "frameShininess": 0
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic Monochrome Green (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0.2,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.5538,
+                "brightness": 0.5,
+                "burnIn": 0.2517,
+                "chromaColor": 0.0,
+                "classicCrt": true,
+                "contrast": 0.7959,
+                "flickering": 0.1,
+                "fontColor": "#0ccc68",
+                "fontName": "CLASSIC_TERMINUS_SCALED",
+                "fontSource": 0,
+                "fontWidth": 1,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0.2,
+                "horizontalSync": 0.08,
+                "jitter": 0.1997,
+                "lineSpacing": 0.0833,
+                "margin": 0.5,
+                "rasterization": 0,
+                "rgbShift": 0,
+                "saturationColor": 0.0,
+                "screenCurvature": 0.3,
+                "screenRadius": 0.1,
+                "staticNoise": 0.1198,
+                "windowOpacity": 1
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic Green Scanlines (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.6,
+                "brightness": 0.5,
+                "burnIn": 0.3,
+                "chromaColor": 0.5,
+                "classicCrt": true,
+                "contrast": 0.6,
+                "flickering": 0.1,
+                "fontColor": "#7cff4f",
+                "fontName": "CLASSIC_PRO_FONT",
+                "fontSource": 0,
+                "fontWidth": 1,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0.2,
+                "horizontalSync": 0.151,
+                "jitter": 0.11,
+                "lineSpacing": 0.0833,
+                "margin": 0.5,
+                "rasterization": 1,
+                "rgbShift": 0,
+                "saturationColor": 0.5,
+                "screenCurvature": 0.3,
+                "screenRadius": 0.1,
+                "staticNoise": 0.15,
+                "windowOpacity": 1
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic Pixelated (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.4045,
+                "brightness": 0.6041,
+                "burnIn": 0.1024,
+                "chromaColor": 0.7517,
+                "classicCrt": true,
+                "contrast": 0.7473,
+                "flickering": 0.1962,
+                "fontColor": "#ffffff",
+                "fontName": "CLASSIC_COMMODORE_PET",
+                "fontSource": 0,
+                "fontWidth": 0.8,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0.2,
+                "horizontalSync": 0.151,
+                "jitter": 0,
+                "lineSpacing": 0.375,
+                "margin": 0.5,
+                "rasterization": 2,
+                "rgbShift": 0,
+                "saturationColor": 0,
+                "screenCurvature": 0,
+                "screenRadius": 0.1,
+                "staticNoise": 0.15,
+                "windowOpacity": 1
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic Apple ][ (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0.3038,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.5,
+                "brightness": 0.5,
+                "burnIn": 0.5017,
+                "chromaColor": 0,
+                "classicCrt": true,
+                "contrast": 0.85,
+                "flickering": 0.2,
+                "fontColor": "#00d56d",
+                "fontName": "CLASSIC_APPLE_II",
+                "fontSource": 0,
+                "fontWidth": 1,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0.22,
+                "horizontalSync": 0.16,
+                "jitter": 0.1,
+                "lineSpacing": 0.375,
+                "margin": 0.5,
+                "rasterization": 1,
+                "rgbShift": 0,
+                "saturationColor": 0,
+                "screenCurvature": 0.5,
+                "screenRadius": 0.1,
+                "staticNoise": 0.099,
+                "windowOpacity": 1
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic Vintage (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0.5,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.4983,
+                "brightness": 0.5014,
+                "burnIn": 0.4983,
+                "chromaColor": 0,
+                "classicCrt": true,
+                "contrast": 0.7473,
+                "flickering": 0.9,
+                "fontColor": "#00ff3e",
+                "fontName": "CLASSIC_COMMODORE_PET",
+                "fontSource": 0,
+                "fontWidth": 0.7,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0.3,
+                "horizontalSync": 0.42,
+                "jitter": 0.4,
+                "lineSpacing": 0.375,
+                "margin": 0.5,
+                "rasterization": 1,
+                "rgbShift": 0.2969,
+                "saturationColor": 0,
+                "screenCurvature": 0.5,
+                "screenRadius": 0.1,
+                "staticNoise": 0.2969,
+                "windowOpacity": 1
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic IBM DOS (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0.151,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.2969,
+                "brightness": 0.5,
+                "burnIn": 0.0469,
+                "chromaColor": 1,
+                "classicCrt": true,
+                "contrast": 0.85,
+                "flickering": 0.0955,
+                "fontColor": "#ffffff",
+                "fontName": "CLASSIC_IBM_DOS",
+                "fontSource": 0,
+                "fontWidth": 1,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0.1545,
+                "horizontalSync": 0,
+                "jitter": 0.1545,
+                "lineSpacing": 0.1875,
+                "margin": 0.5,
+                "rasterization": 0,
+                "rgbShift": 0.3524,
+                "saturationColor": 0,
+                "screenCurvature": 0.4,
+                "screenRadius": 0.1,
+                "staticNoise": 0.0503,
+                "windowOpacity": 1
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic IBM 3278 (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0.1,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.2969,
+                "brightness": 0.5,
+                "burnIn": 0.6,
+                "chromaColor": 0,
+                "classicCrt": true,
+                "contrast": 0.85,
+                "flickering": 0,
+                "fontColor": "#0ccc68",
+                "fontName": "CLASSIC_IBM_3278",
+                "fontSource": 0,
+                "fontWidth": 1,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0,
+                "horizontalSync": 0,
+                "jitter": 0,
+                "lineSpacing": 0.2,
+                "margin": 0.5,
+                "rasterization": 0,
+                "rgbShift": 0,
+                "saturationColor": 0,
+                "screenCurvature": 0.2,
+                "screenRadius": 0.1,
+                "staticNoise": 0,
+                "windowOpacity": 1
+            }'
+            builtin: true
+        }
+        ListElement {
+            text: "Classic Futuristic (1.1.1)"
+            obj_string: '{
+                "ambientLight": 0,
+                "backgroundColor": "#000000",
+                "blinkingCursor": false,
+                "bloom": 0.5017,
+                "brightness": 0.5014,
+                "burnIn": 0.0955,
+                "chromaColor": 1,
+                "classicCrt": true,
+                "contrast": 0.85,
+                "flickering": 0.2,
+                "fontColor": "#729fcf",
+                "fontName": "CLASSIC_TERMINUS",
+                "fontSource": 0,
+                "fontWidth": 1,
+                "frameColor": "#ffffff",
+                "frameShininess": 0,
+                "frameSize": 0,
+                "glowingLine": 0.1476,
+                "horizontalSync": 0,
+                "jitter": 0.099,
+                "lineSpacing": 0.1,
+                "margin": 0.1,
+                "rasterization": 0,
+                "rgbShift": 0,
+                "saturationColor": 0.4983,
+                "screenCurvature": 0,
+                "screenRadius": 0.1,
+                "staticNoise": 0.0955,
+                "windowOpacity": 0.7
             }'
             builtin: true
         }

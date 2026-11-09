@@ -25,6 +25,12 @@ layout(std140, binding = 0) uniform ubuf {
     float frameSize;
     float screen_brightness;
     float bloom;
+    float classicCrt;
+    vec4 fontColor;
+    vec4 backgroundColor;
+    float chromaColor;
+    vec2 virtualResolution;
+    int rasterization;
 };
 
 layout(binding = 1) uniform sampler2D source;
@@ -54,6 +60,11 @@ void main() {
     isScreen = min2(step(vec2(0.0), curvatureCoords) - step(vec2(1.0), curvatureCoords));
     isReflection = shownDraw - isScreen;
     txt_coords = curvatureCoords * (-1.0 + 2.0 * step(vec2(0.0), curvatureCoords) - 2.0 * step(vec2(1.0), curvatureCoords));
+    if (classicCrt > 0.5) {
+        // The 1.1.1 glass reflects at twice the source coordinate outside the tube.
+        txt_coords = curvatureCoords * (-2.0 + 3.0 * step(vec2(0.0), curvatureCoords)
+                                               - 3.0 * step(vec2(1.0), curvatureCoords));
+    }
 #endif
 
     vec3 txt_color = texture(source, txt_coords).rgb;
@@ -76,6 +87,29 @@ void main() {
     bloomColor = bloomFullColor.rgb;
     bloomAlpha = bloomFullColor.a;
 #endif
+
+    if (classicCrt > 0.5) {
+        // 1.1.1 masks the text at the source pixels before adding bloom and noise.
+        if (rasterization == 1 || rasterization == 2) {
+            vec2 cell = fract(txt_coords * virtualResolution);
+            vec2 stripe = smoothstep(0.0, 0.5, cell) - smoothstep(0.5, 1.0, cell);
+            txt_color *= mix(0.5, 1.0, stripe.y);
+            if (rasterization == 2)
+                txt_color *= mix(0.5, 1.0, stripe.x);
+        }
+        // 1.1.1 adds tinted bloom after the phosphor colour mapping.
+        txt_color += vec3(0.0001);
+        float grey = dot(txt_color, vec3(0.21, 0.72, 0.04));
+        vec3 foreground = mix(fontColor.rgb, txt_color * fontColor.rgb / grey, chromaColor);
+        finalColor = mix(backgroundColor.rgb, foreground, grey * shownDraw);
+#if CRT_BLOOM == 1
+        float greyBloom = dot(bloomColor, vec3(0.21, 0.72, 0.04));
+        vec3 tintedBloom = fontColor.rgb * mix(vec3(greyBloom), bloomColor, chromaColor);
+        finalColor += clamp(tintedBloom * bloom * bloomAlpha, 0.0, 0.5);
+#endif
+        fragColor = vec4(finalColor * screen_brightness, qt_Opacity);
+        return;
+    }
 
 #if CRT_BLOOM == 1
     vec3 bloomOnScreen = bloomColor * isScreen;

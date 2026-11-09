@@ -39,7 +39,7 @@ Item {
         var rgbShiftOn = appSettings.rgbShift > 0 ? 1 : 0;
         var bloomOn = appSettings.bloom > 0 ? 1 : 0;
         var curvatureOn = (appSettings.screenCurvature > 0 || appSettings.frameSize > 0) ? 1 : 0;
-        var shineOn = appSettings.frameShininess > 0 ? 1 : 0;
+        var shineOn = !appSettings.classicCrt && appSettings.frameShininess > 0 ? 1 : 0;
         return "qrc:/shaders/terminal_static_rgb" + rgbShiftOn +
                "_bloom" + bloomOn +
                "_curve" + curvatureOn +
@@ -54,7 +54,7 @@ Item {
     property color fontColor: appSettings.fontColor
     property color backgroundColor: appSettings.backgroundColor
 
-    property real screenCurvature: appSettings.screenCurvature * appSettings.screenCurvatureSize * terminalWindow.normalizedWindowScale
+    property real screenCurvature: appSettings.curvatureForWindow(terminalWindow.normalizedWindowScale)
     property real frameSize: appSettings.frameSize * terminalWindow.normalizedWindowScale
 
     property real chromaColor: appSettings.chromaColor
@@ -81,6 +81,7 @@ Item {
         property real screenCurvature: parent.screenCurvature
         property real chromaColor: parent.chromaColor
         property real ambientLight: parent.ambientLight
+        property real classicCrt: appSettings.classicCrt ? 1 : 0
 
         property real flickering: appSettings.flickering
         property real horizontalSync: appSettings.horizontalSync
@@ -95,8 +96,9 @@ Item {
         property real jitter: appSettings.jitter
         property size jitterDisplacement: Qt.size(0.007 * jitter, 0.002 * jitter)
         property real staticNoise: appSettings.staticNoise
-        property size scaleNoiseSize: Qt.size((width * 0.75) / (noiseTexture.width * appSettings.windowScaling * appSettings.totalFontScaling),
-                                              (height * 0.75) / (noiseTexture.height * appSettings.windowScaling * appSettings.totalFontScaling))
+        readonly property real noiseScale: appSettings.classicCrt ? 1 : 0.75
+        property size scaleNoiseSize: Qt.size((width * noiseScale) / (noiseTexture.width * appSettings.windowScaling * appSettings.totalFontScaling),
+                                              (height * noiseScale) / (noiseTexture.height * appSettings.windowScaling * appSettings.totalFontScaling))
 
         property size virtualResolution: parent.virtualResolution
 
@@ -112,7 +114,7 @@ Item {
         property real bloom: parent.bloomSource ? appSettings.bloom * 2.5 : 0
 
         anchors.fill: parent
-        blending: false
+        blending: appSettings.classicCrt && appSettings.windowOpacity < 1
 
         Image {
             id: noiseTexture
@@ -170,13 +172,17 @@ Item {
 
         property color fontColor: parent.fontColor
         property color backgroundColor: parent.backgroundColor
+        property real classicCrt: appSettings.classicCrt ? 1 : 0
         property real bloom: bloomSource ? appSettings.bloom * 2.5 : 0
 
         property real screenCurvature: parent.screenCurvature
 
         property real chromaColor: appSettings.chromaColor;
 
-        property real rgbShift: appSettings.rgbShift * (4.0 / width) * appSettings.totalFontScaling
+        property real rgbShift: appSettings.rgbShift * (appSettings.classicCrt ? 12.0 : 4.0)
+                                / width * appSettings.totalFontScaling
+        property size virtualResolution: parent.virtualResolution
+        property int rasterization: appSettings.rasterization
 
         property real screen_brightness: Utils.lint(0.5, 1.5, appSettings.brightness)
         property real frameShininess: appSettings.frameShininess

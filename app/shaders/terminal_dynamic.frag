@@ -44,6 +44,8 @@ layout(std140, binding = 0) uniform ubuf {
     float frameShininess;
     float frameSize;
     float bloom;
+    float classicCrt;
+    float ambientLight;
 };
 
 layout(binding = 0) uniform sampler2D noiseSource;
@@ -143,18 +145,43 @@ void main() {
 
     vec4 noiseTexel = texture(noiseSource, scaleNoiseSize * coords + vec2(fract(time / 0.051), fract(time / 0.237)));
 
-    vec2 txt_coords = coords + (noiseTexel.ba - vec2(0.5)) * jitterDisplacement * jitter;
+    bool classic = classicCrt > 0.5;
+    vec2 txt_coords = coords + (noiseTexel.ba - vec2(0.5)) * jitterDisplacement
+        * (classic ? 1.0 : jitter);
 
     float color = 0.0001;
-    color += noiseTexel.a * staticNoise * (1.0 - distance * 1.3);
+    float noise = staticNoise + (classic && staticNoise > 0.0 ? vDistortionScale * 7.0 : 0.0);
+    color += noiseTexel.a * noise * (1.0 - distance * 1.3);
     color += randomPass(coords * virtualResolution) * glowingLine;
 
 #if CRT_DISPLAY_FRAME == 1
     vec4 frameColor = texture(frameSource, qt_TexCoord0);
-    color *= (1.0 - frameColor.a);
+    if (!classic)
+        color *= (1.0 - frameColor.a);
 #endif
 
     vec3 txt_color = texture(screenBuffer, txt_coords).rgb;
+    if (classic) {
+#if CRT_BURN_IN == 1
+        vec3 trail = texture(burnInSource, staticCoords).rgb;
+        float decay = clamp((time - burnInLastUpdate) * burnInTime, 0.0, 1.0);
+        trail = 0.65 * (trail - vec3(decay));
+        vec3 tintedTrail = fontColor.rgb * mix(vec3(rgb2grey(trail)), trail, chromaColor);
+        txt_color = max(txt_color, tintedTrail);
+#endif
+#if CRT_RASTER_MODE == 3
+        txt_color = applyRasterization(staticCoords, txt_color, virtualResolution, rasterizationIntensity);
+#endif
+        vec3 finalColor = (txt_color + fontColor.rgb * color) * vBrightness;
+        float edgeFade = 1.0 - distance;
+        finalColor += vec3(ambientLight * edgeFade * edgeFade);
+#if CRT_DISPLAY_FRAME == 1
+        finalColor = mix(finalColor, frameColor.rgb, frameColor.a);
+#endif
+        fragColor = vec4(finalColor * qt_Opacity, qt_Opacity);
+        return;
+    }
+
     float bloomScale = 1.0 + max(bloom, 0.0);
     txt_color *= bloomScale;
 

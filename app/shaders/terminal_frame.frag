@@ -13,6 +13,8 @@ layout(std140, binding = 0) uniform ubuf {
     vec2 viewportSize;
     float ambientLight;
     float frameShininess;
+    float classicCrt;
+    float shadowLength;
 };
 
 float min2(vec2 v) { return min(v.x, v.y); }
@@ -35,9 +37,30 @@ float roundedRectSdfPixels(vec2 p, vec2 topLeft, vec2 bottomRight, float radiusP
     return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0) - radiusPixels;
 }
 
+// Port of the bezel and glass shadow in cool-retro-term 1.1.1's NewTerminalFrame.qml.
+vec4 classicFrame(vec2 coords) {
+    vec2 aa = 1.0 / max(viewportSize, vec2(1.0));
+    float outer = max(shadowLength, 0.000001);
+    float inner = outer * 0.5;
+    vec2 outerEdges = 1.0 - smoothstep(vec2(-outer), vec2(0.0), coords)
+        + smoothstep(vec2(1.0), vec2(1.0 + outer), coords);
+    float outerShadow = clamp(sqrt(max(outerEdges.x, outerEdges.y)), 0.0, 1.0);
+    vec2 edges = 1.0 - smoothstep(vec2(0.0), aa, coords)
+        + smoothstep(vec2(1.0) - aa, vec2(1.0), coords);
+    float alpha = clamp(edges.x + edges.y, 0.0, 1.0) * mix(1.0, 0.9, outerShadow);
+    float innerShadow = 1.0 - prod2(smoothstep(0.0, inner, coords)
+        - smoothstep(1.0 - inner, 1.0, coords));
+    alpha = max(alpha, 0.5 * innerShadow * innerShadow);
+    return vec4(frameColor.rgb * outerShadow * alpha, alpha);
+}
+
 void main() {
     vec2 staticCoords = qt_TexCoord0;
     vec2 coords = distortCoordinates(staticCoords);
+    if (classicCrt > 0.5) {
+        fragColor = classicFrame(coords) * qt_Opacity;
+        return;
+    }
 
     float screenRadiusPixels = screenRadius;
     float edgeSoftPixels = 1.0;
