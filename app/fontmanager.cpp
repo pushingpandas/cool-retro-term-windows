@@ -378,6 +378,22 @@ void FontManager::populateBundledFonts()
         1.0,
         32,
         false);
+
+    addBundledFont("CLASSIC_TERMINUS_SCALED", "Terminus (1.1.1)",
+                   ":/fonts/modern-terminus/TerminusTTF-4.46.0.ttf", 1.0, 12, true, {}, 3.0);
+    addBundledFont("CLASSIC_PRO_FONT", "Pro Font (1.1.1)",
+                   ":/fonts/modern-pro-font-win-tweaked/ProFontWindows.ttf", 1.0, 12, true, {}, 3.0);
+    addBundledFont("CLASSIC_COMMODORE_PET", "Commodore PET (1.1.1)",
+                   ":/fonts/pet-me/PetMe.ttf", 1.0, 8, true, {}, 3.5);
+    // Match the released 1.1.1 AppImage's Apple ][ cell width.
+    addBundledFont("CLASSIC_APPLE_II", "Apple ][ (1.1.1)",
+                   ":/fonts/apple2/PrintChar21.ttf", 0.8, 8, true, {}, 3.5);
+    addBundledFont("CLASSIC_IBM_DOS", "IBM DOS (1.1.1)",
+                   ":/fonts/oldschool-pc-fonts/PxPlus_IBM_VGA8.ttf", 1.0, 16, true, {}, 2.0);
+    addBundledFont("CLASSIC_IBM_3278", "HD: IBM 3278 (1.1.1)",
+                   ":/fonts/classic-ibm-3278/3270Medium.ttf", 1.0, 32, false, {}, 1.0);
+    addBundledFont("CLASSIC_TERMINUS", "HD: Terminus (1.1.1)",
+                   ":/fonts/modern-terminus/TerminusTTF-4.46.0.ttf", 1.0, 35, false, {}, 1.0);
 }
 
 void FontManager::addBundledFont(const QString &name,
@@ -386,7 +402,8 @@ void FontManager::addBundledFont(const QString &name,
                                  qreal baseWidth,
                                  int pixelSize,
                                  bool lowResolutionFont,
-                                 const QString &fallbackName)
+                                 const QString &fallbackName,
+                                 qreal classicScale)
 {
     FontEntry entry;
     entry.name = name;
@@ -397,7 +414,8 @@ void FontManager::addBundledFont(const QString &name,
     entry.isSystemFont = false;
     entry.fallbackName = fallbackName;
     entry.family = resolveFontFamily(source);
-    entry.baseWidth = lowResolutionFont
+    entry.classicScale = classicScale;
+    entry.baseWidth = lowResolutionFont && classicScale == 0.0
         ? computeBaseWidth(entry.family, pixelSize, baseWidth)
         : baseWidth;
     m_allFonts.append(entry);
@@ -439,7 +457,8 @@ void FontManager::updateFilteredFonts()
         }
 
         const bool matchesRasterization = font.isSystemFont
-            || (modernMode == !font.lowResolutionFont);
+            || (modernMode == !font.lowResolutionFont)
+            || (m_rasterization == 0 && font.classicScale > 0.0);
 
         if (!matchesRasterization) {
             continue;
@@ -479,17 +498,22 @@ void FontManager::updateComputedFont()
     const qreal totalFontScaling = m_baseFontScaling * m_fontScaling;
     const qreal targetPixelHeight = kBaseFontPixelHeight * totalFontScaling;
     const qreal lineSpacingFactor = m_lineSpacing;
+    const bool classic = font->classicScale > 0.0;
+    const qreal scaledFontHeight = classic ? font->pixelSize * totalFontScaling : targetPixelHeight;
+    const int pixelSize = font->lowResolutionFont ? font->pixelSize : static_cast<int>(scaledFontHeight);
+    // Classic bitmaps add spacing in the font texture before upscaling.
+    const qreal spacingPixels = (classic ? pixelSize : targetPixelHeight) * lineSpacingFactor;
+    const int lineSpacing = qRound(spacingPixels);
 
-    const int lineSpacing = qRound(targetPixelHeight * lineSpacingFactor);
-    const int pixelSize = font->lowResolutionFont
-        ? font->pixelSize
-        : static_cast<int>(targetPixelHeight);
-
-    const qreal nativeLineHeight = font->pixelSize + qRound(font->pixelSize * lineSpacingFactor);
-    const qreal targetLineHeight = targetPixelHeight + lineSpacing;
-    const qreal screenScaling = font->lowResolutionFont
-        ? (nativeLineHeight > 0 ? targetLineHeight / nativeLineHeight : 1.0)
-        : 1.0;
+    qreal screenScaling = 1.0;
+    if (font->lowResolutionFont) {
+        const qreal nativeLineHeight = font->pixelSize + qRound(font->pixelSize * lineSpacingFactor);
+        if (classic) {
+            screenScaling = font->classicScale * totalFontScaling;
+        } else if (nativeLineHeight > 0) {
+            screenScaling = (targetPixelHeight + lineSpacing) / nativeLineHeight;
+        }
+    }
 
     const qreal fontWidth = font->baseWidth * m_fontWidth;
 

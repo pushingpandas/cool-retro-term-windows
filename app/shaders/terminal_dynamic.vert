@@ -27,6 +27,8 @@ layout(std140, binding = 0) uniform ubuf {
     float frameShininess;
     float frameSize;
     float bloom;
+    float classicCrt;
+    float ambientLight;
 };
 
 layout(binding = 0) uniform sampler2D noiseSource;
@@ -45,7 +47,8 @@ void main() {
     vBrightness = 1.0 + (initialNoiseTexel.g - 0.5) * flickering;
 
     float randval = horizontalSyncStrength - initialNoiseTexel.r;
-    vDistortionScale = step(0.0, randval) * randval * horizontalSyncStrength * horizontalSync;
+    vDistortionScale = step(0.0, randval) * randval * horizontalSyncStrength
+        * (classicCrt > 0.5 && horizontalSync > 0.0 ? 1.0 : horizontalSync);
     vDistortionFreq = mix(4.0, 40.0, initialNoiseTexel.g) * step(0.0, horizontalSync);
 
     gl_Position = qt_Matrix * qt_Vertex;

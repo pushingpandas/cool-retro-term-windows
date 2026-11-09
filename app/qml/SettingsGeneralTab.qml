@@ -213,15 +213,19 @@ ColumnLayout {
             }
             Label {
                 text: qsTr("Radius")
+                enabled: !appSettings.classicCrt
             }
             SimpleSlider {
+                enabled: !appSettings.classicCrt
                 onValueChanged: appSettings._screenRadius = value
                 value: appSettings._screenRadius
             }
             Label {
                 text: qsTr("Frame size")
+                enabled: !appSettings.classicCrt
             }
             SimpleSlider {
+                enabled: !appSettings.classicCrt
                 onValueChanged: appSettings._frameSize = value
                 value: appSettings._frameSize
             }

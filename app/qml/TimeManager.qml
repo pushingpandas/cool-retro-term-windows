@@ -31,6 +31,13 @@ QtObject {
     property var frameDriver: FrameAnimation {
         running: enableTimer
         onTriggered: {
+            if (appSettings.classicCrt) {
+                // 1.1.1 advances the effects clock in 50 ms steps by default.
+                const classicTick = Math.floor(elapsedTime * 20) / 20
+                if (classicTick > time)
+                    time = classicTick
+                return
+            }
             timeManager._frameCounter += 1
 
             if (timeManager._frameCounter >= timeManager.framesPerUpdate) {

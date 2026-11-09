@@ -18,6 +18,7 @@ struct FontEntry
     bool isSystemFont = false;
     QString family;
     QString fallbackName;
+    qreal classicScale = 0.0;
 };
 
 class FontListModel : public QAbstractListModel

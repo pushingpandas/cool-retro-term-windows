@@ -41,6 +41,9 @@
         <file>fonts/pet-me/PetMe.ttf</file>
         <file>BurnInEffect.qml</file>
         <file>fonts/terminus/TerminessNerdFontMono-Regular.ttf</file>
+        <file>fonts/modern-terminus/TerminusTTF-4.46.0.ttf</file>
+        <file>fonts/modern-pro-font-win-tweaked/ProFontWindows.ttf</file>
+        <file>fonts/classic-ibm-3278/3270Medium.ttf</file>
         <file>fonts/departure-mono/DepartureMonoNerdFontMono-Regular.otf</file>
         <file>fonts/opendyslexic/OpenDyslexicMNerdFontMono-Regular.otf</file>
         <file>fonts/source-code-pro/SauceCodeProNerdFontMono-Regular.ttf</file>

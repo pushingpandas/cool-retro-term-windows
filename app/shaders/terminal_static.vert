@@ -12,6 +12,12 @@ layout(std140, binding = 0) uniform ubuf {
     float frameSize;
     float screen_brightness;
     float bloom;
+    float classicCrt;
+    vec4 fontColor;
+    vec4 backgroundColor;
+    float chromaColor;
+    vec2 virtualResolution;
+    int rasterization;
 };
 
 layout(location = 0) out vec2 qt_TexCoord0;

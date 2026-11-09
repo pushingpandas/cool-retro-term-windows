@@ -27,13 +27,21 @@ ShaderEffect {
     property color _fontColor: appSettings.fontColor
     property color _lightColor: Utils.mix(_fontColor, _backgroundColor, 0.2)
 
-    property color frameColor: Utils.mix(
+    property real classicCrt: appSettings.classicCrt ? 1 : 0
+    property real classicAmbientLight: Utils.lint(0.2, 0.8, appSettings.ambientLight)
+    property real shadowLength: 0.5 * screenCurvature * Utils.lint(0.50, 1.5, classicAmbientLight)
+    // Utils.mix reversed its interpolation direction after 1.1.1.
+    property color classicLightColor: Utils.mix(_backgroundColor, _fontColor, 0.2)
+
+    property color frameColor: appSettings.classicCrt
+        ? Utils.mix(classicLightColor, appSettings.frameColor, classicAmbientLight)
+        : Utils.mix(
         Utils.scaleColor(_lightColor, 0.2),
         _staticFrameColor,
         0.125 + 0.750 * ambientLight
     )
 
-    property real screenCurvature: appSettings.screenCurvature * appSettings.screenCurvatureSize * terminalWindow.normalizedWindowScale
+    property real screenCurvature: appSettings.curvatureForWindow(terminalWindow.normalizedWindowScale)
 
     property real frameShininess: appSettings.frameShininess
 
@@ -41,7 +49,8 @@ ShaderEffect {
 
     property real screenRadius: appSettings.screenRadius
 
-    property size viewportSize: Qt.size(width / appSettings.windowScaling, height / appSettings.windowScaling)
+    property size viewportSize: appSettings.classicCrt ? Qt.size(width, height)
+        : Qt.size(width / appSettings.windowScaling, height / appSettings.windowScaling)
 
     property real ambientLight: appSettings.ambientLight
 

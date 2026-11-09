@@ -82,7 +82,8 @@ private:
                         qreal baseWidth,
                         int pixelSize,
                         bool lowResolutionFont,
-                        const QString &fallbackName = QString());
+                        const QString &fallbackName = QString(),
+                        qreal classicScale = 0.0);
     void setFontSubstitutions(const QString &family, const QStringList &substitutes);
     void removeFontSubstitution(const QString &family);
     void updateFilteredFonts();

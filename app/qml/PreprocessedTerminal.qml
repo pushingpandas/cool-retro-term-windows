@@ -116,6 +116,7 @@ Item{
 
         fullCursorHeight: true
         blinkingCursor: appSettings.blinkingCursor
+        enableBold: !appSettings.classicCrt && !appSettings.lowResolutionFont
 
         colorScheme: "cool-retro-term"
 
@@ -145,7 +146,6 @@ Item{
             kterminal.lineSpacing = lineSpacing;
             kterminal.antialiasText = !lowResolutionFont;
             kterminal.smooth = !lowResolutionFont;
-            kterminal.enableBold = !lowResolutionFont;
             kterminal.enableItalic = !lowResolutionFont;
 
             kterminal.font = Qt.font({
@@ -260,8 +260,7 @@ Item{
 
             var cc = Qt.size(0.5 - x, 0.5 - y);
             var distortion = (cc.height * cc.height + cc.width * cc.width)
-                    * appSettings.screenCurvature * appSettings.screenCurvatureSize
-                    * terminalWindow.normalizedWindowScale;
+                    * appSettings.curvatureForWindow(terminalWindow.normalizedWindowScale);
 
             return Qt.point((x - cc.width  * (1+distortion) * distortion) * (kterminal.totalWidth),
                            (y - cc.height * (1+distortion) * distortion) * (kterminal.totalHeight))
